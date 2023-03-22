@@ -3,6 +3,8 @@ import clsx from "clsx"
 type GridSize = [number, number];
 type MouseCoords = { startX: number, startY: number, scrollLeft: number, scrollTop: number }
 type Cursor = "grab" | "default"
+const MAX_ZOOM = 96;
+const MIN_ZOOM = 12
 const textures = [
     {
         name: "stone",
@@ -18,6 +20,7 @@ function MapEditor() {
     const [gridSize, setGridSize] = useState<GridSize>([30, 30]);
     const grid = useRef<HTMLDivElement | null>(null);
     const [cursor, setCursor] = useState<Cursor>("default")
+    const [zoomLevel, setZoomLevel] = useState<number>(48)
     const [currentTexture, setCurrentTexture] = useState<string>();
     const [isMouseDown, setIsMouseDown] = useState<boolean>(false);
     const mouseCoords = useRef<MouseCoords>({
@@ -57,6 +60,19 @@ function MapEditor() {
             </div>
         )
     }
+    const handleZoom = (zoomType: "in" | "out") => {
+
+        if (zoomType === "in") {
+            const currentZoom = zoomLevel + 12;
+            if (currentZoom > MAX_ZOOM) return;
+            setZoomLevel(currentZoom);
+            return;
+        }
+        const currentZoom = zoomLevel - 12;
+        if (currentZoom <= MIN_ZOOM) return;
+        setZoomLevel(currentZoom);
+
+    }
     const constructGrid = useMemo(() => {
         const handleHoverStart = (e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) => {
             if (cursor === "grab") return
@@ -91,7 +107,10 @@ function MapEditor() {
         for (let i = 0; i < gridSize[0]; i++) {
             const cols: Array<JSX.Element> = []
             for (let j = 0; j < gridSize[1]; j++) {
-                cols.push(<div className="bg-gray-300 border w-12 h-12" onMouseOver={handleHoverStart}
+                cols.push(<div className="bg-gray-300 border" style={{
+                    width: String(zoomLevel) + "px",
+                    height: String(zoomLevel) + "px",
+                }} onMouseOver={handleHoverStart}
                     onClick={handleClick}
                     onMouseLeave={handleHoverEnd}
 
@@ -105,7 +124,7 @@ function MapEditor() {
         }
 
         return grid;
-    }, [gridSize, currentTexture])
+    }, [gridSize, currentTexture, cursor, zoomLevel])
     const handleDragStart = (e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) => {
         if (!grid.current || cursor !== "grab") return
         const startX = e.pageX - grid.current.offsetLeft;
@@ -161,6 +180,12 @@ function MapEditor() {
             </div>
             <div onClick={() => setCursor("default")}>
                 arrow
+            </div>
+            <div onClick={() => handleZoom("in")}>
+                zoom in
+            </div>
+            <div onClick={() => handleZoom("out")}>
+                zoom out
             </div>
             <Toolbar />
         </div>
