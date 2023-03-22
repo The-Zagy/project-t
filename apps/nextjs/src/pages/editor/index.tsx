@@ -59,12 +59,14 @@ function MapEditor() {
     }
     const constructGrid = useMemo(() => {
         const handleHoverStart = (e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) => {
+            if (cursor === "grab") return
             if (!currentTexture) return
             const img = e.currentTarget.firstChild as HTMLImageElement;
             img.src = currentTexture
             img.style.opacity = "100%";
         }
         const handleHoverEnd = (e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) => {
+            if (cursor === "grab") return
             const img = e.currentTarget.firstChild as HTMLImageElement;
             const comitted = img.dataset.comitted
             if (comitted) {
@@ -76,6 +78,7 @@ function MapEditor() {
             img.style.opacity = "0";
         }
         const handleClick = (e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) => {
+            if (cursor === "grab") return
             if (!currentTexture) return
             const img = e.currentTarget.firstChild as HTMLImageElement;
             img.style.opacity = "100%";
@@ -125,8 +128,8 @@ function MapEditor() {
 
         const x = e.pageX - grid.current.offsetLeft;
         const y = e.pageY - grid.current.offsetTop;
-        const walkX = (x - mouseCoords.current.startX) * 2;
-        const walkY = (y - mouseCoords.current.startY) * 2;
+        const walkX = (x - mouseCoords.current.startX) * 1.5;
+        const walkY = (y - mouseCoords.current.startY) * 1.5;
         grid.current.scrollLeft = mouseCoords.current.scrollLeft - walkX;
         grid.current.scrollTop = mouseCoords.current.scrollTop - walkY;
 
