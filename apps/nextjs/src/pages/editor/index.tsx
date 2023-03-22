@@ -1,4 +1,4 @@
-import { type MouseEvent, useCallback, useRef, useState } from "react"
+import { type MouseEvent, useCallback, useRef, useState, useMemo } from "react"
 import clsx from "clsx"
 type GridSize = [number, number];
 type MouseCoords = { startX: number, startY: number, scrollLeft: number, scrollTop: number }
@@ -7,7 +7,7 @@ function MapEditor() {
     const [gridSize, setGridSize] = useState<GridSize>([30, 30]);
     const grid = useRef<HTMLDivElement | null>(null);
     const [cursor, setCursor] = useState<Cursor>("default")
-    const isMouseDown = useRef<boolean>(false);
+    const [isMouseDown, setIsMouseDown] = useState<boolean>(false);
     const mouseCoords = useRef<MouseCoords>({
         startX: 0,
         startY: 0,
@@ -15,7 +15,7 @@ function MapEditor() {
         scrollTop: 0
     });
 
-    const constructGrid = useCallback(() => {
+    const constructGrid = useMemo(() => {
         const grid: Array<JSX.Element> = [];
         for (let i = 0; i < gridSize[0]; i++) {
             const cols: Array<JSX.Element> = []
@@ -28,23 +28,23 @@ function MapEditor() {
         return grid;
     }, [gridSize])
     const handleMouseDown = (e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) => {
-        if (!grid.current) return
+        if (!grid.current || cursor !== "grab") return
         const startX = e.pageX - grid.current.offsetLeft;
         const startY = e.pageY - grid.current.offsetTop;
         const scrollLeft = grid.current.scrollLeft;
         const scrollTop = grid.current.scrollTop;
         mouseCoords.current = { startX, startY, scrollLeft, scrollTop }
-        isMouseDown.current = true
+        setIsMouseDown(true)
 
-        grid.current.style.cursor = "grab"
+        document.body.style.cursor = "grabbing"
     }
     const handleMouseUp = () => {
-        isMouseDown.current = false
+        setIsMouseDown(false)
         if (!grid.current) return
-        grid.current.style.cursor = "default"
+        document.body.style.cursor = "default"
     }
     const handleDrag = (e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) => {
-        if (!isMouseDown.current || !grid.current || cursor !== "grab") return;
+        if (!isMouseDown || !grid.current || cursor !== "grab") return;
         e.preventDefault();
 
         const x = e.pageX - grid.current.offsetLeft;
@@ -57,12 +57,16 @@ function MapEditor() {
     }
     return (
         <div className="flex">
-            <div ref={grid} className={clsx(`flex flex-col items-center overflow-scroll w-3/4 max-h-screen`)}
+            <div ref={grid} className={clsx(`flex flex-col items-center overflow-scroll w-3/4 max-h-screen`,
+                { "cursor-default": !isMouseDown && cursor === "default" },
+                { "cursor-grab": !isMouseDown && cursor === "grab" }
+
+            )}
                 onMouseDown={handleMouseDown}
                 onMouseUp={(handleMouseUp)}
                 onMouseMove={handleDrag}
             >
-                {...constructGrid()}
+                {...constructGrid}
             </div>
             <div>
                 <div onClick={() => setGridSize(prev => [prev[0] + 1, prev[1] + 1])}>
