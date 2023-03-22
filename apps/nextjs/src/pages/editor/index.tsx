@@ -61,7 +61,6 @@ function MapEditor() {
         const handleHoverStart = (e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) => {
             if (!currentTexture) return
             const img = e.currentTarget.firstChild as HTMLImageElement;
-
             img.src = currentTexture
             img.style.opacity = "100%";
         }
@@ -73,6 +72,7 @@ function MapEditor() {
                 return;
             };
             //dirty hack to not have an invalid image
+            img.src = "";
             img.style.opacity = "0";
         }
         const handleClick = (e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) => {
@@ -94,7 +94,7 @@ function MapEditor() {
 
                     key={`${i}-${j}`}>
 
-                    <img onDragStart={preventDragBehaviour} style={{ opacity: "0" }} alt="texture" src="data:," />
+                    <img onDragStart={preventDragBehaviour} style={{ opacity: "0" }} alt="texture" src="" />
 
                 </div>)
             }
