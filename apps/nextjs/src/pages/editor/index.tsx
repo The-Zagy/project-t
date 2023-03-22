@@ -1,4 +1,4 @@
-import { type MouseEvent, useRef, useState, useMemo, useEffect } from "react"
+import { type MouseEvent, useRef, useState, useMemo, useEffect, type DragEvent } from "react"
 import clsx from "clsx"
 type GridSize = [number, number];
 type MouseCoords = { startX: number, startY: number, scrollLeft: number, scrollTop: number }
@@ -10,12 +10,8 @@ const textures = [
     },
     {
         name: "dirt",
-        src: "https://static.planetminecraft.com/files/image/minecraft/texture-pack/2021/363/14104498-stone_s.webp"
+        src: "https://garden.spoonflower.com/c/4646961/p/f/m/EhsxseL81iCsbjT-BfJR31631QjZXcVbw8-X3hZ0uVFymPyXU2xvaw/4646961-8-bit-dirt-block-by-wilsongraphics.jpg"
     },
-    {
-        name: "wood",
-        src: "https://static.planetminecraft.com/files/image/minecraft/texture-pack/2021/363/14104498-stone_s.webp"
-    }
 ]
 
 function MapEditor() {
@@ -62,45 +58,52 @@ function MapEditor() {
         )
     }
     const constructGrid = useMemo(() => {
+        const handleHoverStart = (e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) => {
+            if (!currentTexture) return
+            const img = e.currentTarget.firstChild as HTMLImageElement;
+
+            img.src = currentTexture
+            img.style.opacity = "100%";
+        }
+        const handleHoverEnd = (e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) => {
+            const img = e.currentTarget.firstChild as HTMLImageElement;
+            const comitted = img.dataset.comitted
+            if (comitted) {
+                img.src = comitted;
+                return;
+            };
+            //dirty hack to not have an invalid image
+            img.style.opacity = "0";
+        }
+        const handleClick = (e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) => {
+            if (!currentTexture) return
+            const img = e.currentTarget.firstChild as HTMLImageElement;
+            img.style.opacity = "100%";
+            img.dataset.comitted = currentTexture;
+        }
+        const preventDragBehaviour = (e: DragEvent<HTMLImageElement>) => {
+            e.preventDefault();
+        }
         const grid: Array<JSX.Element> = [];
         for (let i = 0; i < gridSize[0]; i++) {
             const cols: Array<JSX.Element> = []
             for (let j = 0; j < gridSize[1]; j++) {
-                cols.push(<div className="bg-gray-300 border w-12 h-12" onMouseOver={
-                    (e) => {
-                        if (!currentTexture) return
-                        const img = e.currentTarget.firstChild as HTMLImageElement;
-                        img.src = currentTexture
-                    }
-
-                }
-                    onClick={(e) => {
-                        if (!currentTexture) return
-                        const img = e.currentTarget.firstChild as HTMLImageElement;
-                        img.src = currentTexture
-                        img.dataset.comitted = currentTexture;
-                    }}
-                    onMouseLeave={
-                        (e) => {
-                            const img = e.currentTarget.firstChild as HTMLImageElement;
-                            if (img.dataset.comitted === currentTexture) return;
-                            img.src = ""
-                        }
-                    }
+                cols.push(<div className="bg-gray-300 border w-12 h-12" onMouseOver={handleHoverStart}
+                    onClick={handleClick}
+                    onMouseLeave={handleHoverEnd}
 
                     key={`${i}-${j}`}>
-                    <img onDragStart={(e) => {
-                        e.preventDefault();
-                    }} alt="texture" src="">
-                    </img>
+
+                    <img onDragStart={preventDragBehaviour} style={{ opacity: "0" }} alt="texture" src="data:," />
+
                 </div>)
             }
             grid.push(<div className="flex flex-row" key={i}>{...cols}</div>)
         }
 
         return grid;
-    }, [gridSize])
-    const handleMouseDown = (e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) => {
+    }, [gridSize, currentTexture])
+    const handleDragStart = (e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) => {
         if (!grid.current || cursor !== "grab") return
         const startX = e.pageX - grid.current.offsetLeft;
         const startY = e.pageY - grid.current.offsetTop;
@@ -111,7 +114,7 @@ function MapEditor() {
 
         document.body.style.cursor = "grabbing"
     }
-    const handleMouseUp = () => {
+    const handleDragEnd = () => {
         setIsMouseDown(false)
         if (!grid.current) return
         document.body.style.cursor = "default"
@@ -138,8 +141,8 @@ function MapEditor() {
                     { "cursor-grab": !isMouseDown && cursor === "grab" }
 
                 )}
-                onMouseDown={handleMouseDown}
-                onMouseUp={(handleMouseUp)}
+                onMouseDown={handleDragStart}
+                onMouseUp={(handleDragEnd)}
                 onMouseMove={handleDrag}
             >
                 {...constructGrid}
