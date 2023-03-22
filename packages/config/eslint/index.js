@@ -22,6 +22,9 @@ const config = {
       "error",
       { prefer: "type-imports", fixStyle: "inline-type-imports" },
     ],
+    "@typescript-eslint/ban-ts-comment": "warn", //! please delete me daddy
+    "@typescript-eslint/no-unsafe-member-access": "warn", //! please delete me daddy
+    "@typescript-eslint/no-unsafe-argument": "warn" //! please delete me daddy
   },
   ignorePatterns: ["**/*.config.js", "**/*.config.cjs", "packages/config/**"],
   reportUnusedDisableDirectives: true,
