@@ -4,7 +4,7 @@ type GridSize = [number, number];
 type MouseCoords = { startX: number, startY: number, scrollLeft: number, scrollTop: number }
 type Cursor = "grab" | "default"
 const MAX_ZOOM = 96;
-const MIN_ZOOM = 12
+const MIN_ZOOM = 24;
 const textures = [
     {
         name: "stone",
