@@ -1,11 +1,27 @@
-export interface ServerToClientEvents {
-    noArg: () => void;
-    basicEmit: (a: number, b: string, c: Buffer) => void;
-    withAck: (d: string, callback: (e: number) => void) => void;
+export interface SharedServerToClientEvents {
+    roomInfo: (id: string) => void;
+    userJoined: (id: string) => void;
+    userLeft: (id: string) => void;
 }
 
-export interface ClientToServerEvents {
+export interface ServerToClientEvents  extends SharedServerToClientEvents {
+    masterLeft: () => void; // only for acknowolodgment
+    roomJoined: (id: string) => void;
+}
+
+export interface MasterServerToClientEvents extends SharedServerToClientEvents {
+    roomCreated: (id: string) => void;
+}
+
+export interface SharedClientToServerEvents {
     hello: () => void;
+}
+export interface ClientToServerEvents extends SharedClientToServerEvents {
+    joinRoom: (id: string) => void;
+}
+
+export interface MasterClientToServerEvents extends SharedClientToServerEvents {
+    createRoom: (id: string) => void;
 }
 
 export interface InterServerEvents {
